@@ -14,23 +14,8 @@ def driver(request):
         driver.save_screenshot(screenshot_path)
     driver.quit()
 
-def pytest_runtest_makereport(item, call):
-    if "driver" in item.fixturenames:
-        driver = item.funcargs["driver"]
-        if call.when == "call":
-            item._request.node.rep_call = call
-
-# Сохраняем результат каждого вызова
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield
     rep = outcome.get_result()
     setattr(item, "rep_" + rep.when, rep)
-@pytest.fixture
-def close_popups(browser):
-    try:
-        cookie_btn = browser.find_element("id", "rcc-confirm-button")
-        browser.execute_script("arguments[0].scrollIntoView(true);", cookie_btn)
-        cookie_btn.click()
-    except:
-        pass

@@ -13,3 +13,14 @@ class OrderLocators:
     COOKIES_CLOSE = (By.ID, "rcc-confirm-button")
     ORDER_BUTTON = (By.XPATH, "//button[text()='Заказать']")
     SUCCESS_MESSAGE = (By.XPATH, "//div[@class='Order_ModalHeader__3FDaJ']/h3")
+    METRO_INPUT = (By.CLASS_NAME, "select-search__input")  # Поле метро
+    METRO_OPTION = (By.XPATH, "//li[@class='select-search__row']")  # Любая станция
+#-- второго шага формы--
+    DATE_INPUT = (By.XPATH, "//input[@placeholder='* Когда привезти самокат']")
+    RENT_DROPDOWN = (By.CLASS_NAME, "Dropdown-control")
+    RENT_OPTION = (By.XPATH, "//div[@class='Dropdown-option' and text()='сутки']")
+    SCOOTER_COLOR_BLACK = (By.ID, "black")
+    SCOOTER_COLOR_GREY = (By.ID, "grey")
+    COMMENT_FIELD = (By.XPATH, "//input[@placeholder='Комментарий для курьера']")
+    CONFIRM_BUTTON = (By.XPATH, "//button[contains(text(), 'Заказать')]")
+    ORDER_CONFIRMED = (By.XPATH, "//div[contains(text(), 'Заказ оформлен')]")
