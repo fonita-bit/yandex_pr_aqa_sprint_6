@@ -8,6 +8,9 @@ class BasePage:
         self.driver = driver
         self.wait = WebDriverWait(self.driver, 10)
 
+    def open(self, url):  #  Унифицированный open()
+        self.driver.get(url)
+
     def wait_for_visible(self, locator):
         return self.wait.until(EC.visibility_of_element_located(locator))
 
