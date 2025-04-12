@@ -1,20 +1,28 @@
 import pytest
 import allure
-from pages.faq_page import FaqPage
-from urls import FAQ_URL
+from pages.order_page import OrderPage
+from test_data import valid_orders
 
+@allure.suite("Проверка сценария заказа самоката")
+class TestOrderFlow:
 
-@allure.suite("FAQ Блок")
-class TestFaqSection:
+    @allure.title("Проверка заказа самоката: {data}")
+    @pytest.mark.parametrize("order_data, position", valid_orders)
+    def test_order_flow(self, driver, order_data, position):
+        order_page = OrderPage(driver)
+        order_page.open()
 
-    @allure.title("Проверка отображения ответа на вопрос {index}")
-    @pytest.mark.parametrize("index", list(range(8)))
-    def test_faq_question_expansion(self, driver, index):
-        faq_page = FaqPage(driver)
-        faq_page.open(FAQ_URL)
-        faq_page.close_cookies_if_present()
-        faq_page.scroll_to_question(index)
-        faq_page.expand_question(index)
-        answer = faq_page.get_answer_text(index)
-        assert answer.strip(), f"Ответ на вопрос {index} не отобразился"
-    #-- редиректы на дзен и лого проверяются в test_logo_redirects.py --
+        # Прокручиваем страницу и кликаем кнопку в зависимости от позиции
+        order_page.scroll_to_order_button(position)
+        order_page.click_order_button(position)
+
+        # Заполняем первую форму
+        order_page.fill_first_order_form(*order_data[:5])
+        # передаем имя, фамилию, адрес, метро, телефон
+        order_page.go_to_second_step()
+        order_page.fill_second_order_form(*order_data[5:8])
+        # передаем дату, срок аренды, цвет
+        order_page.submit_order()
+        #print("Переход к заполнению второй формы...")
+        # Проверка, что заказ оформлен
+        assert order_page.is_order_confirmed(), "Заказ не был подтвержден"

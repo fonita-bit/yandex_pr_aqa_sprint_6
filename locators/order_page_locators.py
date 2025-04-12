@@ -7,7 +7,10 @@ class OrderLocators:
     LAST_NAME = (By.XPATH, "//input[@placeholder='* Фамилия']")
     ADDRESS = (By.XPATH, "//input[@placeholder='* Адрес: куда привезти заказ']")
     PHONE = (By.XPATH, "//input[@placeholder='* Телефон: на него позвонит курьер']")
+
     NEXT_BUTTON = (By.XPATH, "//button[text()='Далее']")
+    DATE_INPUT = (By.XPATH, "//input[@placeholder='* Когда привезти самокат']")
+
     CONFIRM_BUTTON = (By.XPATH, "//button[text()='Да']")
     ORDER_CONFIRMED = (By.CLASS_NAME, "Order_ModalHeader")
     COOKIES_CLOSE = (By.ID, "rcc-confirm-button")

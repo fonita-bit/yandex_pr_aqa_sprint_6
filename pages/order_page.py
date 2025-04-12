@@ -1,5 +1,7 @@
 import allure
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from locators.order_page_locators import OrderLocators
 from pages.base_page import BasePage
 from urls import BASE_URL
@@ -22,11 +24,11 @@ class OrderPage(BasePage):
         self.wait_and_click(locator)
 
     @allure.step("Заполняем первую форму заказа")
-    def fill_first_order_form(self, name, surname, address, phone):
+    def fill_first_order_form(self, name, surname, address, metro,phone):
         self.type(OrderLocators.FIRST_NAME, name)
         self.type(OrderLocators.LAST_NAME, surname)
         self.type(OrderLocators.ADDRESS, address)
-        self.select_metro_station()
+        self.select_metro_station_by_name(metro)
         self.type(OrderLocators.PHONE, phone)
 
     @allure.step("Выбираем станцию метро по имени: {station_name}")
@@ -57,6 +59,7 @@ class OrderPage(BasePage):
         if self.is_element_present(OrderLocators.COOKIES_CLOSE):
             self.wait_and_click(OrderLocators.COOKIES_CLOSE)
 
+    @allure.step("Заполняем первую форму заказа")
     def fill_order_form_first_step(self, name, surname, address, metro, phone):
         self.type(OrderLocators.FIRST_NAME, name)
         self.type(OrderLocators.LAST_NAME, surname)
@@ -65,23 +68,29 @@ class OrderPage(BasePage):
         self.type(OrderLocators.PHONE, phone)
         self.wait_and_click(OrderLocators.NEXT_BUTTON)
 
+    @allure.step("Заполняем вторую форму заказа")
     def fill_order_form_second_step(self, date, rental, color, comment):
         self.close_cookies_if_present()
-
         self.scroll_to_element(OrderLocators.DATE_INPUT)
         self.type(OrderLocators.DATE_INPUT, date)
-        # Ожидаем, пока календарь закроется, если он открыт
+        # Скрытие элемента календаря
+        self.driver.execute_script("document.querySelector('.react-datepicker').style.display = 'none';")
+        # Закрываем календарь с помощью JavaScript (кликаем по элементу для закрытия)
         try:
-            calendar_close_button = (By.XPATH, "//button[@class='calendar-close-button']")
-            self.wait_for_visible(calendar_close_button)  # Ожидаем появления кнопки закрытия календаря
-            self.safe_click(calendar_close_button)  # Закрываем календарь, если он открыт
+            # Кликаем по элементу с классом 'Order_Header__BZXOb' для закрытия календаря
+            self.driver.execute_script("document.querySelector('.Order_Header__BZXOb').click();")
+            print("Календарь был закрыт кликом по элементу для аренды.")
         except Exception as e:
-            print(f"Календарь не открылся или уже закрыт: {str(e)}")
+            print(f"Не удалось закрыть календарь с помощью JavaScript: {str(e)}")
 
-        self.close_popup_if_present()
-        self.scroll_to_element(OrderLocators.RENT_DROPDOWN)
-        self.safe_click(OrderLocators.RENT_DROPDOWN)
-        self.safe_click(OrderLocators.RENT_OPTION)  # Можно доработать выбор по значению
+        # Ожидаем, пока исчезнет календарь, и потом кликаем по полю "Срок аренды"
+        self.driver.execute_script("document.querySelector('.Dropdown-placeholder').click();")
+        print("Выбрано поле 'Срок аренды' для выбора.")
+
+        # Кликаем на выпадающий список для выбора срока аренды
+        self.wait_and_click(OrderLocators.RENT_DROPDOWN)
+
+        self.safe_click(OrderLocators.RENT_OPTION)
 
         if color == "black":
             self.safe_click(OrderLocators.SCOOTER_COLOR_BLACK)
@@ -89,6 +98,11 @@ class OrderPage(BasePage):
             self.safe_click(OrderLocators.SCOOTER_COLOR_GREY)
 
         self.type(OrderLocators.COMMENT_FIELD, comment)
-
         self.scroll_to_element(OrderLocators.CONFIRM_BUTTON)
         self.safe_click(OrderLocators.CONFIRM_BUTTON)
+
+    @allure.step("Переходим ко второму шагу оформления заказа")
+    def go_to_second_step(self):
+        self.click(OrderLocators.NEXT_BUTTON)  # нажимаем "Далее"
+        self.wait_for_visible(
+            OrderLocators.DATE_INPUT)  # ждём появления поля даты (или другого уникального элемента второго шага)
