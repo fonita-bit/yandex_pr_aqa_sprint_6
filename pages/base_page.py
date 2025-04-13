@@ -1,7 +1,6 @@
+import allure
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from locators.base_page_locators import BasePageLocators
 
 class BasePage:
     def __init__(self, driver):
@@ -20,6 +19,16 @@ class BasePage:
     def wait_and_click(self, locator):
         element = self.wait_for_visible(locator)
         element.click()
+
+    @allure.step("Кликаем по <body>")
+    def click_body(self):
+        body = self.driver.find_element(By.TAG_NAME, 'body')
+        self.safe_click(body)
+
+    @allure.step("Ждём, пока элемент с локатором {locator} исчезнет")
+    def wait_until_invisible(self, locator, timeout=5):
+        self.wait(timeout).until(EC.invisibility_of_element_located(locator))
+
 
     @allure.step("Вводим текст '{text}' в поле: {locator}")
     def type(self, locator, text):
@@ -53,11 +62,24 @@ class BasePage:
         self.driver.switch_to.window(self.driver.window_handles[-1])
 
     @allure.step("Закрываем всплывающее окно, если оно присутствует")
-    def close_popup_if_present(self, timeout=10):
+    def close_popup_if_present(self, locator, timeout=10):  # Добавлено
         try:
-            popup_close_button = (By.XPATH, "//button[contains(@class, 'popup-close')]")
-            WebDriverWait(self.driver, timeout).until(
-                EC.element_to_be_clickable(popup_close_button)
-            ).click()
+            self.wait.until(EC.element_to_be_clickable(locator)).click()
         except Exception as e:
             print(f"Не удалось закрыть всплывающее окно: {e}")
+
+    @allure.step("Выполняем JavaScript: {script}")
+    def execute_script(self, script):  # Добавлено
+        return self.driver.execute_script(script)
+
+    @allure.step("Кликаем по элементу через JS: {locator}")
+    def click_by_js(self, locator):  # Добавлено
+        element = self.driver.find_element(*locator)
+        self.driver.execute_script("arguments[0].click();", element)
+
+    @allure.step("Безопасный клик по элементу: {locator}")
+    def safe_click(self, locator):  # Добавлено
+        try:
+            self.wait_and_click(locator)
+        except Exception:
+            self.click_by_js(locator)

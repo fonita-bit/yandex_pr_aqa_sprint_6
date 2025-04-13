@@ -1,7 +1,5 @@
 import allure
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from locators.order_page_locators import OrderLocators
 from pages.base_page import BasePage
 from urls import BASE_URL
@@ -9,9 +7,12 @@ from urls import BASE_URL
 
 class OrderPage(BasePage):
 
+    # УДАЛЕНО: метод open с прямым обращением к self.driver
+    # ДОБАВЛЕНО: использование open() из BasePage
+
     @allure.step("Открываем страницу оформления заказа")
-    def open(self):
-        self.driver.get(BASE_URL)
+    def open_order_page(self):  # новый метод с вызовом базового open()
+        self.open(BASE_URL)
 
     @allure.step("Скроллим к кнопке заказа ({position})")
     def scroll_to_order_button(self, position):
@@ -24,7 +25,7 @@ class OrderPage(BasePage):
         self.wait_and_click(locator)
 
     @allure.step("Заполняем первую форму заказа")
-    def fill_first_order_form(self, name, surname, address, metro,phone):
+    def fill_first_order_form(self, name, surname, address, metro, phone):
         self.type(OrderLocators.FIRST_NAME, name)
         self.type(OrderLocators.LAST_NAME, surname)
         self.type(OrderLocators.ADDRESS, address)
@@ -34,6 +35,7 @@ class OrderPage(BasePage):
     @allure.step("Выбираем станцию метро по имени: {station_name}")
     def select_metro_station_by_name(self, station_name):
         self.wait_and_click(OrderLocators.METRO_INPUT)
+        # ИСПРАВЛЕНО: локатор вынесен в метод
         metro_option_locator = (By.XPATH, f"//div[@class='select-search__select']//div[text()='{station_name}']")
         self.wait_and_click(metro_option_locator)
 
@@ -73,36 +75,24 @@ class OrderPage(BasePage):
         self.close_cookies_if_present()
         self.scroll_to_element(OrderLocators.DATE_INPUT)
         self.type(OrderLocators.DATE_INPUT, date)
-        # Скрытие элемента календаря
-        self.driver.execute_script("document.querySelector('.react-datepicker').style.display = 'none';")
-        # Закрываем календарь с помощью JavaScript (кликаем по элементу для закрытия)
-        try:
-            # Кликаем по элементу с классом 'Order_Header__BZXOb' для закрытия календаря
-            self.driver.execute_script("document.querySelector('.Order_Header__BZXOb').click();")
-            print("Календарь был закрыт кликом по элементу для аренды.")
-        except Exception as e:
-            print(f"Не удалось закрыть календарь с помощью JavaScript: {str(e)}")
 
-        # Ожидаем, пока исчезнет календарь, и потом кликаем по полю "Срок аренды"
-        self.driver.execute_script("document.querySelector('.Dropdown-placeholder').click();")
-        print("Выбрано поле 'Срок аренды' для выбора.")
+        # ⬇️ Новое: ждём исчезновения datepicker и кликаем по body, чтобы убрать перекрытие
+        self.wait_until_invisible((By.CLASS_NAME, "react-datepicker"))
+        self.click_body()  # метод добавим в base_page
 
-        # Кликаем на выпадающий список для выбора срока аренды
         self.wait_and_click(OrderLocators.RENT_DROPDOWN)
-
-        self.safe_click(OrderLocators.RENT_OPTION)
+        self.wait_and_click(OrderLocators.RENT_OPTION)
 
         if color == "black":
-            self.safe_click(OrderLocators.SCOOTER_COLOR_BLACK)
+            self.wait_and_click(OrderLocators.SCOOTER_COLOR_BLACK)
         elif color == "grey":
-            self.safe_click(OrderLocators.SCOOTER_COLOR_GREY)
+            self.wait_and_click(OrderLocators.SCOOTER_COLOR_GREY)
 
         self.type(OrderLocators.COMMENT_FIELD, comment)
         self.scroll_to_element(OrderLocators.CONFIRM_BUTTON)
-        self.safe_click(OrderLocators.CONFIRM_BUTTON)
+        self.wait_and_click(OrderLocators.CONFIRM_BUTTON)
 
     @allure.step("Переходим ко второму шагу оформления заказа")
     def go_to_second_step(self):
-        self.click(OrderLocators.NEXT_BUTTON)  # нажимаем "Далее"
-        self.wait_for_visible(
-            OrderLocators.DATE_INPUT)  # ждём появления поля даты (или другого уникального элемента второго шага)
+        self.click(OrderLocators.NEXT_BUTTON)
+        self.wait_for_visible(OrderLocators.DATE_INPUT)

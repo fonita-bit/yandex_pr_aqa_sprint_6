@@ -2,6 +2,7 @@ import pytest
 import allure
 from pages.order_page import OrderPage
 from test_data import valid_orders
+from urls import BASE_URL  #  Централизованный BASE_URL
 
 @allure.suite("Проверка сценария заказа самоката")
 class TestOrderFlow:
@@ -10,7 +11,7 @@ class TestOrderFlow:
     @pytest.mark.parametrize("order_data, position", valid_orders)
     def test_order_flow(self, driver, order_data, position):
         order_page = OrderPage(driver)
-        order_page.open()
+        order_page.open(BASE_URL)  # Исправлено: использует BasePage.open()
 
         # Прокручиваем страницу и кликаем кнопку в зависимости от позиции
         order_page.scroll_to_order_button(position)

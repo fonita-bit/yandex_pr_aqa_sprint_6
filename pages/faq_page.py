@@ -1,4 +1,5 @@
 import allure
+from locators.base_page_locators import BasePageLocators
 from locators.faq_page_locators import FaqLocators
 from pages.base_page import BasePage
 from urls import BASE_URL
@@ -26,3 +27,11 @@ class FaqPage(BasePage):
     def close_cookies_if_present(self):
         if self.is_element_present(FaqLocators.COOKIES_CLOSE):
             self.wait_and_click(FaqLocators.COOKIES_CLOSE)
+
+    @allure.step("Кликаем по логотипу Самоката")
+    def click_scooter_logo(self):
+        self.click(BasePageLocators.SCOOTER_LOGO)
+
+    @allure.step("Кликаем по логотипу Яндекс Дзена")
+    def click_yandex_logo(self):
+        self.click(BasePageLocators.YANDEX_LOGO)
