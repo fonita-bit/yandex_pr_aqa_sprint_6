@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from locators.order_page_locators import OrderLocators
 from pages.base_page import BasePage
 from urls import BASE_URL
+from selenium.webdriver.support import expected_conditions as EC
 
 
 class OrderPage(BasePage):

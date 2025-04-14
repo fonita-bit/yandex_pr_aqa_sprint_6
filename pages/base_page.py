@@ -17,9 +17,13 @@ class BasePage:
         return self.wait.until(EC.visibility_of_element_located(locator))
 
     @allure.step("Кликаем по элементу: {locator}")
-    def wait_and_click(self, locator, timeout=5):
-        element = self.wait.until(EC.element_to_be_clickable(locator))
-        self.safe_click(element)  # safe_click вместо element.click()
+    def wait_and_click(self, locator, timeout=10):
+        try:
+            element = self.wait.until(EC.element_to_be_clickable(locator))
+            self.scroll_to_element(locator)  # Чтобы элемент был в области видимости
+            element.click()
+        except TimeoutException:
+            raise AssertionError(f"Элемент {locator} не был кликабелен в течение {timeout} секунд")
 
     @allure.step("Кликаем по тегу <body>")  # ДОБАВЛЕНО
     def click_body(self):
