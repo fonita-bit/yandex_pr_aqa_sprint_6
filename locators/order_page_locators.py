@@ -27,3 +27,7 @@ class OrderLocators:
     COMMENT_FIELD = (By.XPATH, "//input[@placeholder='Комментарий для курьера']")
     CONFIRM_BUTTON = (By.XPATH, "//button[contains(text(), 'Заказать')]")
     ORDER_CONFIRMED = (By.XPATH, "//div[contains(text(), 'Заказ оформлен')]")
+
+    @staticmethod
+    def metro_option_by_name(station_name):
+        return (By.XPATH, f"//div[@class='select-search__select']//div[text()='{station_name}']")

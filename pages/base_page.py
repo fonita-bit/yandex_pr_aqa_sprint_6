@@ -1,4 +1,5 @@
 import allure
+from selenium.webdriver.common.by import By  # используется для click_body
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -16,14 +17,13 @@ class BasePage:
         return self.wait.until(EC.visibility_of_element_located(locator))
 
     @allure.step("Кликаем по элементу: {locator}")
-    def wait_and_click(self, locator):
-        element = self.wait_for_visible(locator)
-        element.click()
+    def wait_and_click(self, locator, timeout=5):
+        element = self.wait.until(EC.element_to_be_clickable(locator))
+        self.safe_click(element)  # safe_click вместо element.click()
 
-    @allure.step("Кликаем по <body>")
+    @allure.step("Кликаем по тегу <body>")  # ДОБАВЛЕНО
     def click_body(self):
-        body = self.driver.find_element(By.TAG_NAME, 'body')
-        self.safe_click(body)
+        self.safe_click((By.TAG_NAME, 'body'))
 
     @allure.step("Ждём, пока элемент с локатором {locator} исчезнет")
     def wait_until_invisible(self, locator, timeout=5):
@@ -74,7 +74,10 @@ class BasePage:
 
     @allure.step("Кликаем по элементу через JS: {locator}")
     def click_by_js(self, locator):  # Добавлено
-        element = self.driver.find_element(*locator)
+        if isinstance(locator, tuple):  # Проверка, что это локатор
+            element = self.driver.find_element(*locator)
+        else:  # Если передан уже найденный WebElement
+            element = locator
         self.driver.execute_script("arguments[0].click();", element)
 
     @allure.step("Безопасный клик по элементу: {locator}")

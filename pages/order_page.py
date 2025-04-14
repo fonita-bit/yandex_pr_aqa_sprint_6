@@ -35,8 +35,11 @@ class OrderPage(BasePage):
     @allure.step("Выбираем станцию метро по имени: {station_name}")
     def select_metro_station_by_name(self, station_name):
         self.wait_and_click(OrderLocators.METRO_INPUT)
+        # Ждём появления контейнера со списком станций
+        self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "select-search__select")))
+
         # ИСПРАВЛЕНО: локатор вынесен в метод
-        metro_option_locator = (By.XPATH, f"//div[@class='select-search__select']//div[text()='{station_name}']")
+        metro_option_locator = OrderLocators.metro_option_by_name(station_name)
         self.wait_and_click(metro_option_locator)
 
     @allure.step("Заполняем вторую форму заказа")
@@ -76,7 +79,7 @@ class OrderPage(BasePage):
         self.scroll_to_element(OrderLocators.DATE_INPUT)
         self.type(OrderLocators.DATE_INPUT, date)
 
-        # ⬇️ Новое: ждём исчезновения datepicker и кликаем по body, чтобы убрать перекрытие
+        # Новое: ждём исчезновения datepicker и кликаем по body, чтобы убрать перекрытие
         self.wait_until_invisible((By.CLASS_NAME, "react-datepicker"))
         self.click_body()  # метод добавим в base_page
 
